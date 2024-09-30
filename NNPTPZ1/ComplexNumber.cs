@@ -5,7 +5,7 @@ namespace NNPTPZ1.Mathematics
     public class ComplexNumber
     {
         public double RealPart { get; set; }
-        public float ImaginaryPart { get; set; }
+        public double ImaginaryPart { get; set; }
 
         public readonly static ComplexNumber Zero = new ComplexNumber()
         {
@@ -46,7 +46,7 @@ namespace NNPTPZ1.Mathematics
             return new ComplexNumber()
             {
                 RealPart = RealPart * multiplicand.RealPart - ImaginaryPart * multiplicand.ImaginaryPart,
-                ImaginaryPart = (float)(RealPart * multiplicand.ImaginaryPart + ImaginaryPart * multiplicand.RealPart)
+                ImaginaryPart = (RealPart * multiplicand.ImaginaryPart + ImaginaryPart * multiplicand.RealPart)
             };
         }
 
@@ -58,7 +58,7 @@ namespace NNPTPZ1.Mathematics
             return new ComplexNumber()
             {
                 RealPart = numerator.RealPart / denominator,
-                ImaginaryPart = (float)(numerator.ImaginaryPart / denominator)
+                ImaginaryPart = (numerator.ImaginaryPart / denominator)
             };
         }
 
