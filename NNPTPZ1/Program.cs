@@ -36,14 +36,14 @@ namespace NNPTPZ1
 
             List<ComplexNumber> koreny = new List<ComplexNumber>();
             // TODO: poly should be parameterised?
-            Poly p = new Poly();
-            p.Coe.Add(new ComplexNumber() { RealPart = 1 });
-            p.Coe.Add(ComplexNumber.Zero);
-            p.Coe.Add(ComplexNumber.Zero);
-            //p.Coe.Add(ComplexNumber.Zero);
-            p.Coe.Add(new ComplexNumber() { RealPart = 1 });
-            Poly ptmp = p;
-            Poly pd = p.Derive();
+            Polynomial p = new Polynomial();
+            p.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
+            p.Coefficients.Add(ComplexNumber.Zero);
+            p.Coefficients.Add(ComplexNumber.Zero);
+            //p.Coefficients.Add(ComplexNumber.Zero);
+            p.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
+            Polynomial ptmp = p;
+            Polynomial pd = p.Derive();
 
             Console.WriteLine(p);
             Console.WriteLine(pd);
