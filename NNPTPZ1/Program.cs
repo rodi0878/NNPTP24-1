@@ -7,6 +7,10 @@ namespace NNPTPZ1
 {
 	class Program
 	{
+		/// <summary>
+		/// This program should produce Newton fractals.
+		/// See more at: https://en.wikipedia.org/wiki/Newton_fractal
+		/// </summary>
 		static void Main(string[] args)
 		{
 			var imageDimensions = ParseImageDimensions(args);
