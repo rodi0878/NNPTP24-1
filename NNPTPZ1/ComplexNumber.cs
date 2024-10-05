@@ -1,4 +1,6 @@
-﻿namespace NNPTPZ1.Mathematics
+﻿using System;
+
+namespace NNPTPZ1.Mathematics
 {
 	public class ComplexNumber
 	{
@@ -19,6 +21,16 @@
 			Real = 0,
 			Imaginary = 0
 		};
+
+		public double GetAbsoluteValue()
+		{
+			return Math.Sqrt(Real * Real + Imaginary * Imaginary);
+		}
+
+		public double GetAngleInRadians()
+		{
+			return Math.Atan(Imaginary / Real);
+		}
 
 		public ComplexNumber Multiply(ComplexNumber other)
 		{

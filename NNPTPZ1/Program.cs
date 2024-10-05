@@ -11,6 +11,11 @@ namespace NNPTPZ1
 		/// This program should produce Newton fractals.
 		/// See more at: https://en.wikipedia.org/wiki/Newton_fractal
 		/// </summary>
+
+		private const int MaxIterations = 30;
+		private const double ConvergenceThreshold = 0.5;
+		private const double RootTolerance = 0.01;
+
 		static void Main(string[] args)
 		{
 			var imageDimensions = ParseImageDimensions(args);
@@ -110,12 +115,12 @@ namespace NNPTPZ1
 		{
 			float iterationCount = 0;
 
-			for (int iteration = 0; iteration < 30; iteration++)
+			for (int iteration = 0; iteration < MaxIterations; iteration++)
 			{
 				var diff = polynomial.Evaluate(complex).Divide(derivedPolynomial.Evaluate(complex));
 				complex = complex.Subtract(diff);
 
-				if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginary, 2) >= 0.5)
+				if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginary, 2) >= ConvergenceThreshold)
 				{
 					iteration--;
 				}
@@ -142,7 +147,7 @@ namespace NNPTPZ1
 
 		private static bool IsRootCloseEnough(ComplexNumber knownRoot, ComplexNumber newRoot)
 		{
-			return Math.Pow(newRoot.Real - knownRoot.Real, 2) + Math.Pow(newRoot.Imaginary - knownRoot.Imaginary, 2) <= 0.01;
+			return Math.Pow(newRoot.Real - knownRoot.Real, 2) + Math.Pow(newRoot.Imaginary - knownRoot.Imaginary, 2) <= RootTolerance;
 		}
 
 		private static Color CalculatePixelColor(Color[] colors, int rootId, float iterationCount)
