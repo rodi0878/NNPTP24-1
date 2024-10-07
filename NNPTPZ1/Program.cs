@@ -14,6 +14,7 @@ namespace NNPTPZ1
         private const int MAX_ITERATIONS = 30;
         private const double COORDINATES_ZERO = 0.0001;
         private const double ROOT_PROXIMITY_THRESHOLD = 0.01;
+        private const double CONVERGENCE_THRESHOLD = 0.5;
         static readonly Color[] colors = new Color[]
             {
                 Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
@@ -33,14 +34,9 @@ namespace NNPTPZ1
             Bitmap bitmap = new Bitmap(width, height);
             List<ComplexNumber> roots = new List<ComplexNumber>();
 
-            double xstep = (xmax - xmin) / width;
-            double ystep = (ymax - ymin) / height;
-
-            // TODO: poly should be parameterised?
-            Polynomial polynomial = new Polynomial(new ComplexNumber() { Re = 1 },
-                                          ComplexNumber.Zero,
-                                          ComplexNumber.Zero,
-                                          new ComplexNumber() { Re = 1 });
+            double xstep = CalculateStepSize(width, xmin, xmax);
+            double ystep = CalculateStepSize(height, ymin, ymax);
+            Polynomial polynomial = GetDefaultPolynomial();
             Polynomial derivedPolynomial = polynomial.Derive();
 
             var maxId = 0;
@@ -64,6 +60,19 @@ namespace NNPTPZ1
             }
 
             return bitmap;
+        }
+
+        private static Polynomial GetDefaultPolynomial()
+        {
+            return new Polynomial(new ComplexNumber() { Re = 1 },
+                                          ComplexNumber.Zero,
+                                          ComplexNumber.Zero,
+                                          new ComplexNumber() { Re = 1 });
+        }
+
+        private static double CalculateStepSize(int side, double min, double max)
+        {
+            return (max - min) / side;
         }
 
         private static (int width, int height, double xmin, double xmax, double ymin, double ymax, string filename) ParseCommandLineArguments(string[] args)
@@ -126,7 +135,7 @@ namespace NNPTPZ1
                 ComplexNumber diff = polynomial.Eval(coordinates).Divide(derivedPolynomial.Eval(coordinates));
                 coordinates = coordinates.Subtract(diff);
 
-                if (Math.Pow(diff.Re, 2) + Math.Pow(diff.Im, 2) >= 0.5)
+                if (Math.Pow(diff.Re, 2) + Math.Pow(diff.Im, 2) >= CONVERGENCE_THRESHOLD)
                 {
                     i--;
                 }

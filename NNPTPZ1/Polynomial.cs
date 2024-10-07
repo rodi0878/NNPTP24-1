@@ -63,15 +63,17 @@ namespace NNPTPZ1
                 for (int i = 0; i < Coefficients.Count; i++)
                 {
                     ComplexNumber coefficient = Coefficients[i];
-                    ComplexNumber bx = x;
+                    ComplexNumber termValue = x;
                     int power = i;
 
                     if (i > 0)
                     {
                         for (int j = 0; j < power - 1; j++)
-                            bx = bx.Multiply(x);
+                        {
+                            termValue = termValue.Multiply(x);
+                        }
 
-                        coefficient = coefficient.Multiply(bx);
+                        coefficient = coefficient.Multiply(termValue);
                     }
 
                     value = value.Add(coefficient);
