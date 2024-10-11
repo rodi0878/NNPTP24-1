@@ -8,38 +8,50 @@ namespace NNPTPZ1.Mathematics
 {
     public class ComplexNumber
     {
-        public double Re { get; set; }
-        public float Imaginari { get; set; }
+        public double Real { get; set; }
+        public float Imaginary { get; set; }
+
+        public readonly static ComplexNumber Zero = new ComplexNumber()
+        {
+            Real = 0,
+            Imaginary = 0
+        };
 
         public override bool Equals(object obj)
         {
             if (obj is ComplexNumber)
             {
-                ComplexNumber x = obj as ComplexNumber;
-                return x.Re == Re && x.Imaginari == Imaginari;
+                ComplexNumber other = obj as ComplexNumber;
+                return other.Real == Real && other.Imaginary == Imaginary;
             }
             return base.Equals(obj);
         }
 
-        public readonly static ComplexNumber Zero = new ComplexNumber()
+        public ComplexNumber Multiply(ComplexNumber other)
         {
-            Re = 0,
-            Imaginari = 0
-        };
-
-        public ComplexNumber Multiply(ComplexNumber b)
-        {
-            ComplexNumber a = this;
             // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
             return new ComplexNumber()
             {
-                Re = a.Re * b.Re - a.Imaginari * b.Imaginari,
-                Imaginari = (float)(a.Re * b.Imaginari + a.Imaginari * b.Re)
+                Real = Real * other.Real - Imaginary * other.Imaginary,
+                Imaginary = (float)(Real * other.Imaginary + Imaginary * other.Real)
             };
         }
-        public double GetAbS()
+
+        public ComplexNumber Divide(ComplexNumber b)
         {
-            return Math.Sqrt(Re * Re + Imaginari * Imaginari);
+            // (aRe + aIm*i) / (bRe + bIm*i)
+            // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
+            //  bRe*bRe - bIm*bIm*i*i
+            ComplexNumber conjugate = new ComplexNumber() { Real = b.Real, Imaginary = -b.Imaginary };
+            ComplexNumber numerator = Multiply(conjugate);
+
+            double denominator = b.Real * b.Real + b.Imaginary * b.Imaginary;
+
+            return new ComplexNumber()
+            {
+                Real = numerator.Real / denominator,
+                Imaginary = (float)(numerator.Imaginary / denominator)
+            };
         }
 
         public ComplexNumber Add(ComplexNumber b)
@@ -47,42 +59,42 @@ namespace NNPTPZ1.Mathematics
             ComplexNumber a = this;
             return new ComplexNumber()
             {
-                Re = a.Re + b.Re,
-                Imaginari = a.Imaginari + b.Imaginari
+                Real = a.Real + b.Real,
+                Imaginary = a.Imaginary + b.Imaginary
             };
         }
-        public double GetAngleInDegrees()
-        {
-            return Math.Atan(Imaginari / Re);
-        }
+
         public ComplexNumber Subtract(ComplexNumber b)
         {
             ComplexNumber a = this;
             return new ComplexNumber()
             {
-                Re = a.Re - b.Re,
-                Imaginari = a.Imaginari - b.Imaginari
+                Real = a.Real - b.Real,
+                Imaginary = a.Imaginary - b.Imaginary
             };
+        }
+
+        public double GetAbS()
+        {
+            return Math.Sqrt(Real * Real + Imaginary * Imaginary);
+        }
+
+        public double GetAngleInDegrees()
+        {
+            return Math.Atan(Imaginary / Real);
         }
 
         public override string ToString()
         {
-            return $"({Re} + {Imaginari}i)";
+            return $"({Real} + {Imaginary}i)";
         }
 
-        internal ComplexNumber Divide(ComplexNumber b)
+        public override int GetHashCode()
         {
-            // (aRe + aIm*i) / (bRe + bIm*i)
-            // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
-            //  bRe*bRe - bIm*bIm*i*i
-            var tmp = this.Multiply(new ComplexNumber() { Re = b.Re, Imaginari = -b.Imaginari });
-            var tmp2 = b.Re * b.Re + b.Imaginari * b.Imaginari;
-
-            return new ComplexNumber()
-            {
-                Re = tmp.Re / tmp2,
-                Imaginari = (float)(tmp.Imaginari / tmp2)
-            };
+            int hashCode = -837395861;
+            hashCode = hashCode * -1521134295 + Real.GetHashCode();
+            hashCode = hashCode * -1521134295 + Imaginary.GetHashCode();
+            return hashCode;
         }
     }
 

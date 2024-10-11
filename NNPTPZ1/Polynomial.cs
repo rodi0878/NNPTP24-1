@@ -27,7 +27,7 @@ namespace NNPTPZ1.Mathematics
             Polynomial derived = new Polynomial();
             for (int i = 1; i < Coefficients.Count; i++)
             {
-                derived.Coefficients.Add(Coefficients[i].Multiply(new ComplexNumber() { Re = i }));
+                derived.Coefficients.Add(Coefficients[i].Multiply(new ComplexNumber() { Real = i }));
             }
 
             return derived;
@@ -40,7 +40,7 @@ namespace NNPTPZ1.Mathematics
         /// <returns>y</returns>
         public ComplexNumber Evaluate(double x)
         {
-            var y = Evalueate(new ComplexNumber() { Re = x, Imaginari = 0 });
+            var y = Evalueate(new ComplexNumber() { Real = x, Imaginary = 0 });
             return y;
         }
 

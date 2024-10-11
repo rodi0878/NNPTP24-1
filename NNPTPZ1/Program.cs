@@ -48,11 +48,11 @@ namespace NNPTPZ1
             List<ComplexNumber> koreny = new List<ComplexNumber>();
             // TODO: poly should be parameterised?
             Polynomial p = new Polynomial();
-            p.Coefficients.Add(new ComplexNumber() { Re = 1 });
+            p.Coefficients.Add(new ComplexNumber() { Real = 1 });
             p.Coefficients.Add(ComplexNumber.Zero);
             p.Coefficients.Add(ComplexNumber.Zero);
             //p.Coe.Add(Cplx.Zero);
-            p.Coefficients.Add(new ComplexNumber() { Re = 1 });
+            p.Coefficients.Add(new ComplexNumber() { Real = 1 });
             Polynomial ptmp = p;
             Polynomial pd = p.Derive();
 
@@ -78,14 +78,14 @@ namespace NNPTPZ1
 
                     ComplexNumber ox = new ComplexNumber()
                     {
-                        Re = x,
-                        Imaginari = (float)(y)
+                        Real = x,
+                        Imaginary = (float)(y)
                     };
 
-                    if (ox.Re == 0)
-                        ox.Re = 0.0001;
-                    if (ox.Imaginari == 0)
-                        ox.Imaginari = 0.0001f;
+                    if (ox.Real == 0)
+                        ox.Real = 0.0001;
+                    if (ox.Imaginary == 0)
+                        ox.Imaginary = 0.0001f;
 
                     //Console.WriteLine(ox);
 
@@ -97,7 +97,7 @@ namespace NNPTPZ1
                         ox = ox.Subtract(diff);
 
                         //Console.WriteLine($"{q} {ox} -({diff})");
-                        if (Math.Pow(diff.Re, 2) + Math.Pow(diff.Imaginari, 2) >= 0.5)
+                        if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginary, 2) >= 0.5)
                         {
                             q--;
                         }
@@ -111,7 +111,7 @@ namespace NNPTPZ1
                     var id = 0;
                     for (int w = 0; w <koreny.Count;w++)
                     {
-                        if (Math.Pow(ox.Re- koreny[w].Re, 2) + Math.Pow(ox.Imaginari - koreny[w].Imaginari, 2) <= 0.01)
+                        if (Math.Pow(ox.Real- koreny[w].Real, 2) + Math.Pow(ox.Imaginary - koreny[w].Imaginary, 2) <= 0.01)
                         {
                             known = true;
                             id = w;
