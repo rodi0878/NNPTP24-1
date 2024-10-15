@@ -125,7 +125,6 @@ namespace NNPTPZ1
             List<ComplexNumber> roots = new List<ComplexNumber>();
             int maxRootId = 0;
 
-            // for every pixel in image...
             for (int i = 0; i < imageWidth; i++)
             {
                 for (int j = 0; j < imageHeight; j++)
