@@ -5,7 +5,7 @@ namespace NNPTPZ1
     internal class Polynomial
     {
         /// <summary>
-        /// Coe
+        /// Coefficients
         /// </summary>
         public List<ComplexNumber> Coefficients { get; set; }
 

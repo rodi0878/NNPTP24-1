@@ -58,7 +58,7 @@ namespace NNPTPZ1
             return Math.Sqrt(RealNumber * RealNumber + ImaginaryNumber * ImaginaryNumber);
         }
 
-        public double GetAngleInDegrees()
+        public double GetAngleInRadians()
         {
             return Math.Atan(ImaginaryNumber / RealNumber);
         }

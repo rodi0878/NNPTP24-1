@@ -37,8 +37,8 @@ namespace NNPTPZ1
 
         private static void LoadConfiguration(out int width, out int height, out double xmin, out double ymin, out double xstep, out double ystep, out string output, out Bitmap bitmap)
         {
-            width = 200;
-            height = 200;
+            width = 300;
+            height = 300;
             xmin = -2.0;
             double xmax = 2.0;
             ymin = -2.0;
@@ -71,7 +71,7 @@ namespace NNPTPZ1
             {
                 for (int j = 0; j < height; j++)
                 {
-                    ProcessPixelOfImage(xmin, ymin, xstep, ystep, bmp, p, pd, roots, ref maxid, i, j);
+                    ProcessPixelOfImage(xmin, ymin, xstep, ystep, bmp, p, pd, roots, ref maxid, j, i);
                 }
             }
         }
@@ -79,18 +79,18 @@ namespace NNPTPZ1
         private static int ProcessPixelOfImage(double xmin, double ymin, double xstep, double ystep, Bitmap bmp, Polynomial p, Polynomial pd, List<ComplexNumber> roots, ref int maxid, int i, int j)
         {
             ComplexNumber complexNumber = CreateCoordinate(xmin, ymin, xstep, ystep, i, j);
-            float it = FindSolutionNewtonIteration(p, pd, ref complexNumber);
+            int iteration = FindSolutionNewtonIteration(p, pd, ref complexNumber);
             int id = FindSolutionRootNumber(roots, ref maxid, complexNumber);
-            Color vv = CreatePixelColor(it, id);
-            PaintPixel(bmp, i, j, vv);
+            Color pixelColor = CreatePixelColor(iteration, id);
+            PaintPixel(bmp, i, j, pixelColor);
 
             return maxid;
         }
 
         private static ComplexNumber CreateCoordinate(double xmin, double ymin, double xstep, double ystep, int i, int j)
         {
-            double y = ymin + i * ystep;
-            double x = xmin + j * xstep;
+            double x = xmin + i * xstep;
+            double y = ymin + j * ystep;
 
             ComplexNumber coordinates = new ComplexNumber()
             {
@@ -105,9 +105,9 @@ namespace NNPTPZ1
             return coordinates;
         }
 
-        private static float FindSolutionNewtonIteration(Polynomial p, Polynomial pd, ref ComplexNumber coordinates)
+        private static int FindSolutionNewtonIteration(Polynomial p, Polynomial pd, ref ComplexNumber coordinates)
         {
-            float it = 0;
+            int iteration = 0;
             for (int i = 0; i < MAX_ITERATIONS; i++)
             {
                 var diff = p.Evaluate(coordinates).Divide(pd.Evaluate(coordinates));
@@ -117,10 +117,10 @@ namespace NNPTPZ1
                 {
                     i--;
                 }
-                it++;
+                iteration++;
             }
 
-            return it;
+            return iteration;
         }
 
         private static int FindSolutionRootNumber(List<ComplexNumber> roots, ref int maxid, ComplexNumber coordinates)
@@ -145,18 +145,20 @@ namespace NNPTPZ1
             return id;
         }
 
-        private static Color CreatePixelColor(float it, int id)
+        private static Color CreatePixelColor(int iterations, int id)
         {
-            Color selectedColor = colors[id % colors.Length];
-            Color adjustedColor = Color.FromArgb(selectedColor.R, selectedColor.G, selectedColor.B);
-            adjustedColor = Color.FromArgb(Math.Min(
-                Math.Max(0, selectedColor.R - (int)it * 2), 255), Math.Min(Math.Max(0, selectedColor.G - (int)it * 2), 255), Math.Min(Math.Max(0, selectedColor.B - (int)it * 2), 255));
-            return adjustedColor;
+            const int colorAdjust = 2;
+            Color pixelColor = colors[id % colors.Length];
+            pixelColor = Color.FromArgb(
+                Math.Min(Math.Max(0, pixelColor.R - iterations * colorAdjust), 255),
+                Math.Min(Math.Max(0, pixelColor.G - iterations * colorAdjust), 255),
+                Math.Min(Math.Max(0, pixelColor.B - iterations * colorAdjust), 255));
+            return pixelColor;
         }
 
         private static void PaintPixel(Bitmap bitmap, int i, int j, Color selectedColor)
         {
-            bitmap.SetPixel(j, i, selectedColor);
+            bitmap.SetPixel(i, j, selectedColor);
         }
 
         private static void SaveImage(Bitmap bitmap, string output)
