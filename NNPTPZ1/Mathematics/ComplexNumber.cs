@@ -1,16 +1,18 @@
 ﻿using System;
 
-namespace NNPTPZ1.Mathematics
+namespace INPTPZ1.Mathematics
 {
     public class ComplexNumber
     {
+
+        public double RealPart { get; set; }
+        public double ImaginaryPart { get; set; }
+
         public readonly static ComplexNumber Zero = new ComplexNumber()
         {
             RealPart = 0,
             ImaginaryPart = 0
         };
-        public double RealPart { get; set; }
-        public double ImaginaryPart { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -22,20 +24,6 @@ namespace NNPTPZ1.Mathematics
             return base.Equals(obj);
         }
 
-        public ComplexNumber Multiply(ComplexNumber b)
-        {
-            ComplexNumber a = this;
-            return new ComplexNumber()
-            {
-                RealPart = a.RealPart * b.RealPart - a.ImaginaryPart * b.ImaginaryPart,
-                ImaginaryPart = a.RealPart * b.ImaginaryPart + a.ImaginaryPart * b.RealPart
-            };
-        }
-        public double GetAbsoluteValue()
-        {
-            return Math.Sqrt(RealPart * RealPart + ImaginaryPart * ImaginaryPart);
-        }
-
         public ComplexNumber Add(ComplexNumber b)
         {
             ComplexNumber a = this;
@@ -44,10 +32,6 @@ namespace NNPTPZ1.Mathematics
                 RealPart = a.RealPart + b.RealPart,
                 ImaginaryPart = a.ImaginaryPart + b.ImaginaryPart
             };
-        }
-        public double GetAngleInDegrees()
-        {
-            return Math.Atan(ImaginaryPart / RealPart);
         }
 
         public ComplexNumber Subtract(ComplexNumber b)
@@ -60,9 +44,14 @@ namespace NNPTPZ1.Mathematics
             };
         }
 
-        public override string ToString()
+        public ComplexNumber Multiply(ComplexNumber b)
         {
-            return $"({RealPart} + {ImaginaryPart}i)";
+            ComplexNumber a = this;
+            return new ComplexNumber()
+            {
+                RealPart = a.RealPart * b.RealPart - a.ImaginaryPart * b.ImaginaryPart,
+                ImaginaryPart = a.RealPart * b.ImaginaryPart + a.ImaginaryPart * b.RealPart
+            };
         }
 
         internal ComplexNumber Divide(ComplexNumber b)
@@ -75,6 +64,21 @@ namespace NNPTPZ1.Mathematics
                 RealPart = temporaryNumeratorsProduct.RealPart / temporaryDenominator,
                 ImaginaryPart = temporaryNumeratorsProduct.ImaginaryPart / temporaryDenominator
             };
+        }
+
+        public double GetAngleInRadians()
+        {
+            return Math.Atan(ImaginaryPart / RealPart);
+        }
+
+        public double GetAbsoluteValue()
+        {
+            return Math.Sqrt(RealPart * RealPart + ImaginaryPart * ImaginaryPart);
+        }
+
+        public override string ToString()
+        {
+            return $"({RealPart} + {ImaginaryPart}i)";
         }
     }
 }
