@@ -11,7 +11,7 @@ namespace NNPTPZ1
     /// </summary>
     class Program
     {
-        static readonly Color[] clrs = new Color[]
+        static readonly Color[] colors = new Color[]
         {
             Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
         };
@@ -46,8 +46,6 @@ namespace NNPTPZ1
             List<ComplexNumber> koreny = new List<ComplexNumber>();
             int maxid = 0;
 
-            // TODO: cleanup!!!
-            // for every pixel in image...
             for (int i = 0; i < intargs[0]; i++)
             {
                 for (int j = 0; j < intargs[1]; j++)
@@ -57,37 +55,39 @@ namespace NNPTPZ1
             }
         }
 
-        private static void ProcessPixelOfImage(Bitmap bmp, double xmin, double ymin, double xstep, double ystep, Polynome p, Polynome pd, List<ComplexNumber> koreny, ref int maxid, int i, int j)
+        private static void ProcessPixelOfImage(Bitmap bmp, double xmin, double ymin, double xstep, double ystep, Polynome p, Polynome pd, List<ComplexNumber> roots, ref int maxid, int i, int j)
         {
             ComplexNumber ox = CreateCoordinate(xmin, ymin, xstep, ystep, i, j);
 
-            float it = FindSolutionOfNewtonIteration(p, pd, ref ox);
+            int iteration = FindSolutionOfNewtonIteration(p, pd, ref ox);
 
-            int id = FindSolutionRootNumber(koreny, ref maxid, ox);
+            int id = FindSolutionRootNumber(roots, ref maxid, ox);
 
-            Color vv = CreatePixelColor(it, id);
+            Color color = CreatePixelColor(iteration, id);
 
-            ColorifyPixel(bmp, i, j, vv);
+            ColorifyPixel(bmp, i, j, color);
         }
 
-        private static void ColorifyPixel(Bitmap bmp, int i, int j, Color vv)
+        private static void ColorifyPixel(Bitmap bmpImage, int i, int j, Color color)
         {
-            bmp.SetPixel(j, i, vv);
+            bmpImage.SetPixel(j, i, color);
         }
 
-        private static Color CreatePixelColor(float it, int id)
+        private static Color CreatePixelColor(int iteration, int id)
         {
-            var vv = clrs[id % clrs.Length];
-            return Color.FromArgb(Math.Min(Math.Max(0, vv.R - (int)it * 2), 255), Math.Min(Math.Max(0, vv.G - (int)it * 2), 255), Math.Min(Math.Max(0, vv.B - (int)it * 2), 255));
+            Color color = colors[id % colors.Length];
+            return Color.FromArgb(Math.Min(Math.Max(0, color.R - (int)iteration * 2), 255),
+                Math.Min(Math.Max(0, color.G - (int)iteration * 2), 255),
+                Math.Min(Math.Max(0, color.B - (int)iteration * 2), 255));
         }
 
-        private static int FindSolutionRootNumber(List<ComplexNumber> koreny, ref int maxid, ComplexNumber ox)
+        private static int FindSolutionRootNumber(List<ComplexNumber> roots, ref int maxId, ComplexNumber ox)
         {
             bool known = false;
             int id = 0;
-            for (int w = 0; w < koreny.Count; w++)
+            for (int w = 0; w < roots.Count; w++)
             {
-                if (Math.Pow(ox.RealPart - koreny[w].RealPart, 2) + Math.Pow(ox.ImaginaryPart - koreny[w].ImaginaryPart, 2) <= 0.01)
+                if (Math.Pow(ox.RealPart - roots[w].RealPart, 2) + Math.Pow(ox.ImaginaryPart - roots[w].ImaginaryPart, 2) <= 0.01)
                 {
                     known = true;
                     id = w;
@@ -95,17 +95,17 @@ namespace NNPTPZ1
             }
             if (!known)
             {
-                koreny.Add(ox);
-                id = koreny.Count;
-                maxid = id + 1;
+                roots.Add(ox);
+                id = roots.Count;
+                maxId = id + 1;
             }
 
             return id;
         }
 
-        private static float FindSolutionOfNewtonIteration(Polynome p, Polynome pd, ref ComplexNumber ox)
+        private static int FindSolutionOfNewtonIteration(Polynome p, Polynome pd, ref ComplexNumber ox)
         {
-            float it = 0;
+            int iteration = 0;
             for (int q = 0; q < 30; q++)
             {
                 var diff = p.Eval(ox).Divide(pd.Eval(ox));
@@ -115,10 +115,10 @@ namespace NNPTPZ1
                 {
                     q--;
                 }
-                it++;
+                iteration++;
             }
 
-            return it;
+            return iteration;
         }
 
         private static ComplexNumber CreateCoordinate(double xmin, double ymin, double xstep, double ystep, int i, int j)
