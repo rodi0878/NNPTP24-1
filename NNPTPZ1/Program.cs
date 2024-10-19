@@ -36,7 +36,7 @@ namespace NNPTPZ1
             string output = args[6];
 
             FractalGenerator fractalGenerator = new FractalGenerator(imageWidth, imageHeight, minX, maxX, minY, maxY, output);
-            fractalGenerator.GenerateFractal();
+            fractalGenerator.GenerateFractal(); 
         }
     }
 }
