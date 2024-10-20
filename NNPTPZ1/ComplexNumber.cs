@@ -74,12 +74,12 @@ namespace NNPTPZ1.Mathematics
             };
         }
 
-        public double GetAbS()
+        public double GetAbsoluteValue()
         {
             return Math.Sqrt(Real * Real + Imaginary * Imaginary);
         }
 
-        public double GetAngleInDegrees()
+        public double GetAngle()
         {
             return Math.Atan(Imaginary / Real);
         }

@@ -13,7 +13,6 @@ using System.Drawing.Text;
 using System.Linq.Expressions;
 using System.Threading;
 using NNPTPZ1.Mathematics;
-using System.Diagnostics;
 using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 
@@ -112,7 +111,7 @@ namespace NNPTPZ1
 
 
             //Console.ReadKey();
-            float iterations = EquationSolution(ref ox, ref p, ref pd);
+            int iterations = EquationSolution(ref ox, ref p, ref pd);
 
             // find solution root number
             int rootId = FindOrAddRoot(ref ox, ref roots);
@@ -121,10 +120,10 @@ namespace NNPTPZ1
 
         }
 
-        private static float EquationSolution(ref ComplexNumber ox, ref Polynomial p, ref Polynomial pd)
+        private static int EquationSolution(ref ComplexNumber ox, ref Polynomial p, ref Polynomial pd)
         {
-            float it = 0;
-            for (int q = 0; q < MaxIterations; q++)
+            int iterations = 0;
+            for (int i = 0; i < MaxIterations; i++)
             {
                 var diff = p.Evalueate(ox).Divide(pd.Evalueate(ox));
                 ox = ox.Subtract(diff);
@@ -132,12 +131,12 @@ namespace NNPTPZ1
                 //Console.WriteLine($"{q} {ox} -({diff})");
                 if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginary, 2) >= ConvergenceThreshold)
                 {
-                    q--;
+                    i--;
                 }
-                it++;
+                iterations++;
             }
 
-            return it;
+            return iterations;
         }
 
         private static int FindOrAddRoot(ref ComplexNumber ox, ref List<ComplexNumber> roots)
@@ -158,11 +157,11 @@ namespace NNPTPZ1
             // colorize pixel according to root number
             //int vv = id;
             //int vv = id * 50 + (int)it*5;
-            var vv = colors[id % colors.Length];
-            vv = Color.FromArgb(vv.R, vv.G, vv.B);
-            vv = Color.FromArgb(Math.Min(Math.Max(0, vv.R - (int)it * 2), 255), Math.Min(Math.Max(0, vv.G - (int)it * 2), 255), Math.Min(Math.Max(0, vv.B - (int)it * 2), 255));
+            var color = colors[id % colors.Length];
+            color = Color.FromArgb(color.R, color.G, color.B);
+            color = Color.FromArgb(Math.Min(Math.Max(0, color.R - (int)it * 2), 255), Math.Min(Math.Max(0, color.G - (int)it * 2), 255), Math.Min(Math.Max(0, color.B - (int)it * 2), 255));
             //vv = Math.Min(Math.Max(0, vv), 255);
-            image.SetPixel(y, x, vv);
+            image.SetPixel(y, x, color);
         }
 
 
