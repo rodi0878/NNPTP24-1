@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace NNPTPZ1
 {
@@ -35,24 +36,15 @@ namespace NNPTPZ1
             /// </summary>
             /// <param name="evaluationPoint">Point to be evaluated.</param>
             /// <returns>Returns evaluated point.</returns>
-            public ComplexNumber Evaluate(double evaluationPoint)
-            {
-                return Evaluate(new ComplexNumber() { RealPart = evaluationPoint, ImaginaryPart = 0 });
-            }
-
-            /// <summary>
-            /// Evaluates the polynomial at given point.
-            /// </summary>
-            /// <param name="evaluationPoint">Point to be evaluated.</param>
-            /// <returns>Returns evaluated point.</returns>
             public ComplexNumber Evaluate(ComplexNumber evaluationPoint)
             {
                 ComplexNumber result = ComplexNumber.Zero;
+
                 for (int i = 0; i < Coefficients.Count; i++)
                 {
                     ComplexNumber coefficient = Coefficients[i];
                     ComplexNumber baseToPower = evaluationPoint;
-              
+
                     if (i > 0)
                     {
                         for (int j = 0; j < i - 1; j++)
@@ -70,31 +62,40 @@ namespace NNPTPZ1
             }
 
             /// <summary>
+            /// Evaluates the polynomial at given point.
+            /// </summary>
+            /// <param name="evaluationPoint">Point to be evaluated.</param>
+            /// <returns>Returns evaluated point.</returns>
+            public ComplexNumber Evaluate(double evaluationPoint)
+            {
+                return Evaluate(new ComplexNumber() { RealPart = evaluationPoint, ImaginaryPart = 0 });
+            }
+
+            /// <summary>
             /// ToString
             /// </summary>
             /// <returns>String repr of polynomial</returns>
             public override string ToString()
             {
-                string str = "";
+                StringBuilder strBuilder = new StringBuilder();
+
                 for (int i = 0; i < Coefficients.Count; i++)
                 {
-                    str += Coefficients[i];
+                    strBuilder.Append(Coefficients[i]);
 
                     if (i > 0)
                     {
-                        for (int j = 0; j < i; j++)
-                        {
-                            str += "x";
-                        }
+                        strBuilder.Append("x");
+                        strBuilder.Append("^" + i);
                     }
 
                     if (i + 1 < Coefficients.Count)
                     {
-                        str += " + ";
+                        strBuilder.Append(" + ");
                     }
                 }
 
-                return str;
+                return strBuilder.ToString();
             }
         }
     }

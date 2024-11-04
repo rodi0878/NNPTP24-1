@@ -40,8 +40,9 @@ namespace NNPTPZ1
 
             public ComplexNumber Multiply(ComplexNumber multiplicator)
             {
-                ComplexNumber multiplicand = this;
                 // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
+                ComplexNumber multiplicand = this;
+                
                 return new ComplexNumber()
                 {
                     RealPart = multiplicand.RealPart * multiplicator.RealPart - multiplicand.ImaginaryPart * multiplicator.ImaginaryPart,
@@ -49,13 +50,13 @@ namespace NNPTPZ1
                 };
             }
 
-            internal ComplexNumber Divide(ComplexNumber divisor)
+            public ComplexNumber Divide(ComplexNumber divisor)
             {
                 // (aRe + aIm*i) / (bRe + bIm*i)
                 // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
                 //  bRe*bRe - bIm*bIm*i*i
-                var numerator = Multiply(divisor.GetConjugate());
-                var denominator = divisor.RealPart * divisor.RealPart + divisor.ImaginaryPart * divisor.ImaginaryPart;
+                ComplexNumber numerator = Multiply(divisor.GetConjugate());
+                double denominator = divisor.GetMagnitudeSquared();
 
                 return new ComplexNumber()
                 {
@@ -69,14 +70,32 @@ namespace NNPTPZ1
                 return new ComplexNumber() { RealPart = RealPart, ImaginaryPart = -ImaginaryPart };
             }
 
+            public double GetMagnitudeSquared()
+            {
+                return RealPart * RealPart + ImaginaryPart * ImaginaryPart;
+            }
+
             public double GetAbsoluteValue()
             {
-                return Math.Sqrt(RealPart * RealPart + ImaginaryPart * ImaginaryPart);
+                return Math.Sqrt(GetMagnitudeSquared());
             }
 
             public double GetAngleInRadians()
             {
                 return Math.Atan(ImaginaryPart / RealPart);
+            }
+
+            public double GetSquaredDistanceTo(ComplexNumber other)
+            {
+                double deltaReal = RealPart - other.RealPart;
+                double deltaImaginary = ImaginaryPart - other.ImaginaryPart;
+
+                return deltaReal * deltaReal + deltaImaginary * deltaImaginary;
+            }
+
+            public bool IsWithinDistance(ComplexNumber other, double threshold)
+            {
+                return GetSquaredDistanceTo(other) <= threshold;
             }
 
             public override string ToString()
