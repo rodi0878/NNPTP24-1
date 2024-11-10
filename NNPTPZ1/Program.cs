@@ -1,19 +1,7 @@
-﻿using System;
+﻿using NNPTPZ1.Mathematics;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using System.Drawing;
-using System.Drawing.Design;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Printing;
-using System.Drawing.Text;
-using System.Drawing.Drawing2D;
-using System.Linq.Expressions;
-using System.Threading;
-using NNPTPZ1.Mathematics;
 
 namespace NNPTPZ1
 {
@@ -21,313 +9,196 @@ namespace NNPTPZ1
     /// This program should produce Newton fractals.
     /// See more at: https://en.wikipedia.org/wiki/Newton_fractal
     /// </summary>
+    /// 
     class Program
     {
+        private const double COORDINATE_MIN_VALUE = 0.0001;
+        private const int MAX_ITERATION = 30;
+        private const double ITERATION_TOLERANCE = 0.5;
+        private const double ROOT_TOLERANCE = 0.01;
+        private static readonly Color[] colors = 
+        {
+            Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, 
+            Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
+        };
+
+        private static int width;
+        private static int height;
+
+        private static double xMin;
+        private static double xMax;
+        private static double yMin;
+        private static double yMax;
+
+        private static string outputPath;
+
+        private static double xStep;
+        private static double yStep;
+
+        private static Bitmap bitmap;
+
         static void Main(string[] args)
         {
-            int[] intargs = new int[2];
-            for (int i = 0; i < intargs.Length; i++)
-            {
-                intargs[i] = int.Parse(args[i]);
-            }
-            double[] doubleargs = new double[4];
-            for (int i = 0; i < doubleargs.Length; i++)
-            {
-                doubleargs[i] = double.Parse(args[i + 2]);
-            }
-            string output = args[6];
-            // TODO: add parameters from args?
-            Bitmap bmp = new Bitmap(intargs[0], intargs[1]);
-            double xmin = doubleargs[0];
-            double xmax = doubleargs[1];
-            double ymin = doubleargs[2];
-            double ymax = doubleargs[3];
+            LoadConfiguration(args);
 
-            double xstep = (xmax - xmin) / intargs[0];
-            double ystep = (ymax - ymin) / intargs[1];
+            GenerateNewtonFractal();
 
-            List<Cplx> koreny = new List<Cplx>();
-            // TODO: poly should be parameterised?
-            Poly p = new Poly();
-            p.Coe.Add(new Cplx() { Re = 1 });
-            p.Coe.Add(Cplx.Zero);
-            p.Coe.Add(Cplx.Zero);
-            //p.Coe.Add(Cplx.Zero);
-            p.Coe.Add(new Cplx() { Re = 1 });
-            Poly ptmp = p;
-            Poly pd = p.Derive();
-
-            Console.WriteLine(p);
-            Console.WriteLine(pd);
-
-            var clrs = new Color[]
-            {
-                Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
-            };
-
-            var maxid = 0;
-
-            // TODO: cleanup!!!
-            // for every pixel in image...
-            for (int i = 0; i < intargs[0]; i++)
-            {
-                for (int j = 0; j < intargs[1]; j++)
-                {
-                    // find "world" coordinates of pixel
-                    double y = ymin + i * ystep;
-                    double x = xmin + j * xstep;
-
-                    Cplx ox = new Cplx()
-                    {
-                        Re = x,
-                        Imaginari = (float)(y)
-                    };
-
-                    if (ox.Re == 0)
-                        ox.Re = 0.0001;
-                    if (ox.Imaginari == 0)
-                        ox.Imaginari = 0.0001f;
-
-                    //Console.WriteLine(ox);
-
-                    // find solution of equation using newton's iteration
-                    float it = 0;
-                    for (int q = 0; q< 30; q++)
-                    {
-                        var diff = p.Eval(ox).Divide(pd.Eval(ox));
-                        ox = ox.Subtract(diff);
-
-                        //Console.WriteLine($"{q} {ox} -({diff})");
-                        if (Math.Pow(diff.Re, 2) + Math.Pow(diff.Imaginari, 2) >= 0.5)
-                        {
-                            q--;
-                        }
-                        it++;
-                    }
-
-                    //Console.ReadKey();
-
-                    // find solution root number
-                    var known = false;
-                    var id = 0;
-                    for (int w = 0; w <koreny.Count;w++)
-                    {
-                        if (Math.Pow(ox.Re- koreny[w].Re, 2) + Math.Pow(ox.Imaginari - koreny[w].Imaginari, 2) <= 0.01)
-                        {
-                            known = true;
-                            id = w;
-                        }
-                    }
-                    if (!known)
-                    {
-                        koreny.Add(ox);
-                        id = koreny.Count;
-                        maxid = id + 1; 
-                    }
-
-                    // colorize pixel according to root number
-                    //int vv = id;
-                    //int vv = id * 50 + (int)it*5;
-                    var vv = clrs[id % clrs.Length];
-                    vv = Color.FromArgb(vv.R, vv.G, vv.B);
-                    vv = Color.FromArgb(Math.Min(Math.Max(0, vv.R-(int)it*2), 255), Math.Min(Math.Max(0, vv.G - (int)it*2), 255), Math.Min(Math.Max(0, vv.B - (int)it*2), 255));
-                    //vv = Math.Min(Math.Max(0, vv), 255);
-                    bmp.SetPixel(j, i, vv);
-                    //bmp.SetPixel(j, i, Color.FromArgb(vv, vv, vv));
-                }
-            }
-
-            // TODO: delete I suppose...
-            //for (int i = 0; i < 300; i++)
-            //{
-            //    for (int j = 0; j < 300; j++)
-            //    {
-            //        Color c = bmp.GetPixel(j, i);
-            //        int nv = (int)Math.Floor(c.R * (255.0 / maxid));
-            //        bmp.SetPixel(j, i, Color.FromArgb(nv, nv, nv));
-            //    }
-            //}
-
-                    bmp.Save(output ?? "../../../out.png");
-            //Console.ReadKey();
+            SaveImage();
         }
-    }
 
-    namespace Mathematics
-    {
-        public class Poly
+        private static void GenerateNewtonFractal()
         {
-            /// <summary>
-            /// Coe
-            /// </summary>
-            public List<Cplx> Coe { get; set; }
+            List<ComplexNumber> roots = new List<ComplexNumber>();
 
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            public Poly() => Coe = new List<Cplx>();
+            Polynomial polynomial = CreatePolynomial();
 
-            public void Add(Cplx coe) =>
-                Coe.Add(coe);
+            Polynomial polynomialDerivative = polynomial.Derive();
 
-            /// <summary>
-            /// Derives this polynomial and creates new one
-            /// </summary>
-            /// <returns>Derivated polynomial</returns>
-            public Poly Derive()
+            int maxId = 0;
+
+            for (int i = 0; i < width; i++)
             {
-                Poly p = new Poly();
-                for (int q = 1; q < Coe.Count; q++)
+                for (int j = 0; j < height; j++)
                 {
-                    p.Coe.Add(Coe[q].Multiply(new Cplx() { Re = q }));
+                    ProcessPixelOfImage(roots, polynomial, polynomialDerivative, ref maxId, i, j);
                 }
-
-                return p;
-            }
-
-            /// <summary>
-            /// Evaluates polynomial at given point
-            /// </summary>
-            /// <param name="x">point of evaluation</param>
-            /// <returns>y</returns>
-            public Cplx Eval(double x)
-            {
-                var y = Eval(new Cplx() { Re = x, Imaginari = 0 });
-                return y;
-            }
-
-            /// <summary>
-            /// Evaluates polynomial at given point
-            /// </summary>
-            /// <param name="x">point of evaluation</param>
-            /// <returns>y</returns>
-            public Cplx Eval(Cplx x)
-            {
-                Cplx s = Cplx.Zero;
-                for (int i = 0; i < Coe.Count; i++)
-                {
-                    Cplx coef = Coe[i];
-                    Cplx bx = x;
-                    int power = i;
-
-                    if (i > 0)
-                    {
-                        for (int j = 0; j < power - 1; j++)
-                            bx = bx.Multiply(x);
-
-                        coef = coef.Multiply(bx);
-                    }
-
-                    s = s.Add(coef);
-                }
-
-                return s;
-            }
-
-            /// <summary>
-            /// ToString
-            /// </summary>
-            /// <returns>String repr of polynomial</returns>
-            public override string ToString()
-            {
-                string s = "";
-                int i = 0;
-                for (; i < Coe.Count; i++)
-                {
-                    s += Coe[i];
-                    if (i > 0)
-                    {
-                        int j = 0;
-                        for (; j < i; j++)
-                        {
-                            s += "x";
-                        }
-                    }
-                    if (i+1<Coe.Count)
-                    s += " + ";
-                }
-                return s;
             }
         }
 
-        public class Cplx
+        private static void ProcessPixelOfImage(List<ComplexNumber> roots, Polynomial polynomial, Polynomial polynomialDerivative, ref int maxId, int i, int j)
         {
-            public double Re { get; set; }
-            public float Imaginari { get; set; }
+            // find "world" coordinates of pixel
+            ComplexNumber worldCoordinate = CreateWorldCoordinate(i, j);
 
-            public override bool Equals(object obj)
+            // find solution of equation using newton's iteration
+            int iteration = FindSolutionOfNewtonIteration(polynomial, polynomialDerivative, ref worldCoordinate);
+
+            // find solution root number
+            int rootNumber = FindSolutionRootNumber(roots, ref maxId, worldCoordinate);
+
+            Color pixelColor = CalculateColor(iteration, rootNumber);
+
+            // colorize pixel according to root number
+            SetBitmapPixel(i, j, pixelColor);
+        }
+
+        private static int FindSolutionOfNewtonIteration(Polynomial polynomial, Polynomial polynomialDerivative, ref ComplexNumber worldCoordinate)
+        {
+            int iteration = 0;
+            for (int i = 0; i < MAX_ITERATION; i++)
             {
-                if (obj is Cplx)
+                ComplexNumber difference = polynomial.Evaluate(worldCoordinate).Divide(polynomialDerivative.Evaluate(worldCoordinate));
+
+                worldCoordinate = worldCoordinate.Subtract(difference);
+
+                if (Math.Pow(difference.RealPart, 2) + Math.Pow(difference.ImaginariPart, 2) >= ITERATION_TOLERANCE)
                 {
-                    Cplx x = obj as Cplx;
-                    return x.Re == Re && x.Imaginari == Imaginari;
+                    i--;
                 }
-                return base.Equals(obj);
+                iteration++;
             }
 
-            public readonly static Cplx Zero = new Cplx()
+            return iteration;
+        }
+
+        private static ComplexNumber CreateWorldCoordinate(int i, int j)
+        {
+            double worldY = yMin + i * yStep;
+            double worldX = xMin + j * xStep;
+
+            ComplexNumber worldCoordinate = new ComplexNumber()
             {
-                Re = 0,
-                Imaginari = 0
+                RealPart = worldX,
+                ImaginariPart = worldY
             };
 
-            public Cplx Multiply(Cplx b)
+            if (worldCoordinate.RealPart == 0)
             {
-                Cplx a = this;
-                // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
-                return new Cplx()
-                {
-                    Re = a.Re * b.Re - a.Imaginari * b.Imaginari,
-                    Imaginari = (float)(a.Re * b.Imaginari + a.Imaginari * b.Re)
-                };
-            }
-            public double GetAbS()
-            {
-                return Math.Sqrt( Re * Re + Imaginari * Imaginari);
+                worldCoordinate.RealPart = COORDINATE_MIN_VALUE;
             }
 
-            public Cplx Add(Cplx b)
+            if (worldCoordinate.ImaginariPart == 0)
             {
-                Cplx a = this;
-                return new Cplx()
-                {
-                    Re = a.Re + b.Re,
-                    Imaginari = a.Imaginari + b.Imaginari
-                };
-            }
-            public double GetAngleInDegrees()
-            {
-                return Math.Atan(Imaginari / Re);
-            }
-            public Cplx Subtract(Cplx b)
-            {
-                Cplx a = this;
-                return new Cplx()
-                {
-                    Re = a.Re - b.Re,
-                    Imaginari = a.Imaginari - b.Imaginari
-                };
+                worldCoordinate.ImaginariPart = COORDINATE_MIN_VALUE;
             }
 
-            public override string ToString()
-            {
-                return $"({Re} + {Imaginari}i)";
-            }
+            return worldCoordinate;
+        }
 
-            internal Cplx Divide(Cplx b)
-            {
-                // (aRe + aIm*i) / (bRe + bIm*i)
-                // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
-                //  bRe*bRe - bIm*bIm*i*i
-                var tmp = this.Multiply(new Cplx() { Re = b.Re, Imaginari = -b.Imaginari });
-                var tmp2 = b.Re * b.Re + b.Imaginari * b.Imaginari;
+        private static int FindSolutionRootNumber(List<ComplexNumber> roots, ref int maxId, ComplexNumber worldCoordinate)
+        {
+            bool known = false;
+            int rootCount = 0;
 
-                return new Cplx()
+            for (int i = 0; i < roots.Count; i++)
+            {
+                if (Math.Pow(worldCoordinate.RealPart - roots[i].RealPart, 2) +
+                    Math.Pow(worldCoordinate.ImaginariPart - roots[i].ImaginariPart, 2) <= ROOT_TOLERANCE)
                 {
-                    Re = tmp.Re / tmp2,
-                    Imaginari = (float)(tmp.Imaginari / tmp2)
-                };
+                    known = true;
+                    rootCount = i;
+                }
             }
+
+            if (!known)
+            {
+                roots.Add(worldCoordinate);
+                rootCount = roots.Count;
+                maxId = rootCount + 1;
+            }
+
+            return rootCount;
+        }
+
+        private static Polynomial CreatePolynomial()
+        {
+            Polynomial polynomial = new Polynomial();
+
+            polynomial.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
+            polynomial.Coefficients.Add(ComplexNumber.Zero);
+            polynomial.Coefficients.Add(ComplexNumber.Zero);
+            polynomial.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
+
+            return polynomial;
+        }
+
+        private static void LoadConfiguration(string[] args)
+        {
+            width = int.Parse(args[0]);
+            height = int.Parse(args[1]);
+
+            xMin = double.Parse(args[2]);
+            xMax = double.Parse(args[3]);
+            yMin = double.Parse(args[4]);
+            yMax = double.Parse(args[5]);
+
+            outputPath = args[6];
+
+            xStep = (xMax - xMin) / width;
+            yStep = (yMax - yMin) / height;
+
+            bitmap = new Bitmap(width, height);
+        }
+
+        private static void SaveImage()
+        {
+            bitmap.Save(outputPath ?? "../../../out.png");
+        }
+
+        private static Color CalculateColor(int iteration, int rootNumber)
+        {
+            Color pixelColor = colors[rootNumber % colors.Length];
+            pixelColor = Color.FromArgb(
+                Math.Min(Math.Max(0, pixelColor.R - iteration * 2), 255),
+                Math.Min(Math.Max(0, pixelColor.G - iteration * 2), 255), 
+                Math.Min(Math.Max(0, pixelColor.B - iteration * 2), 255));
+
+            return pixelColor;
+        }
+
+        private static void SetBitmapPixel(int i, int j, Color pixelColor)
+        {
+            bitmap.SetPixel(j, i, pixelColor);
         }
     }
 }
