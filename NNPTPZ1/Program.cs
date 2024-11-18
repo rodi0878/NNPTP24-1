@@ -22,15 +22,14 @@ namespace NNPTPZ1
 
         static void Main(string[] args)
         {
-            int[] imagineDimensions = ReadImagineDimensions(args);
+            Bitmap bitmap = ReadImagineDimensions(args);
             double[] worldCoordinates = ReadWorldCoordinates(args);
             string outputFile = args[6];
 
-            Bitmap bitmap = new Bitmap(imagineDimensions[0], imagineDimensions[1]);
-            double xStep = (worldCoordinates[1] - worldCoordinates[0]) / imagineDimensions[0];
-            double yStep = (worldCoordinates[3] - worldCoordinates[2]) / imagineDimensions[1];
+            double xStep = (worldCoordinates[1] - worldCoordinates[0]) / bitmap.Height;
+            double yStep = (worldCoordinates[3] - worldCoordinates[2]) / bitmap.Width;
 
-            Polynomial polynomial = createPolynomial();
+            Polynomial polynomial = CreatePolynomial();
             Polynomial derivedPolynomial = polynomial.Derive();
 
             Console.WriteLine(polynomial);
@@ -38,33 +37,38 @@ namespace NNPTPZ1
 
             List<ComplexNumber> roots = new List<ComplexNumber>();
             int maxid = 0;
-            maxid = GenerateFractal(imagineDimensions, worldCoordinates, bitmap, xStep, yStep, polynomial, derivedPolynomial, roots, maxid);
+            maxid = GenerateFractal(worldCoordinates, bitmap, xStep, yStep, polynomial, derivedPolynomial, roots, maxid);
 
             bitmap.Save(outputFile ?? "../../../out.png");
         }
 
-        private static int GenerateFractal(int[] imagineDimensions, double[] worldCoordinates, Bitmap bitmap, double xStep, double yStep, Polynomial polynomial, Polynomial derivedPolynomial, List<ComplexNumber> roots, int maxid)
+        private static int GenerateFractal(double[] worldCoordinates, Bitmap bitmap, double xStep, double yStep, Polynomial polynomial, Polynomial derivedPolynomial, List<ComplexNumber> roots, int maxid)
         {
-            for (int i = 0; i < imagineDimensions[0]; i++)
+            for (int i = 0; i < bitmap.Width; i++)
             {
-                for (int j = 0; j < imagineDimensions[1]; j++)
+                for (int j = 0; j < bitmap.Height; j++)
                 {
                     ComplexNumber worldCoordinateForPixel = GetWorldCoordinatesForPixel(worldCoordinates, xStep, yStep, i, j);
-                    float iterationCount = IterateNewton(polynomial, derivedPolynomial, ref worldCoordinateForPixel);
-
-                    int rootId = FindRootId(roots, ref maxid, worldCoordinateForPixel);
-
-                    var color = colors[rootId % colors.Length];
-                    color = Color.FromArgb(color.R, color.G, color.B);
-                    color = Color.FromArgb(
-                        Math.Min(Math.Max(0, color.R - (int)iterationCount * 2), 255),
-                        Math.Min(Math.Max(0, color.G - (int)iterationCount * 2), 255),
-                        Math.Min(Math.Max(0, color.B - (int)iterationCount * 2), 255)
-                        );
-                    bitmap.SetPixel(j, i, color);
+                    int iterationCount = IterateNewton(polynomial, derivedPolynomial, ref worldCoordinateForPixel);
+                    maxid = ColorizePixel(bitmap, roots, maxid, i, j, worldCoordinateForPixel, iterationCount);
                 }
             }
 
+            return maxid;
+        }
+
+        private static int ColorizePixel(Bitmap bitmap, List<ComplexNumber> roots, int maxid, int i, int j, ComplexNumber worldCoordinateForPixel, int iterationCount)
+        {
+            int rootId = FindRootId(roots, ref maxid, worldCoordinateForPixel);
+
+            var color = colors[rootId % colors.Length];
+            color = Color.FromArgb(color.R, color.G, color.B);
+            color = Color.FromArgb(
+                Math.Min(Math.Max(0, color.R - iterationCount * 2), 255),
+                Math.Min(Math.Max(0, color.G - iterationCount * 2), 255),
+                Math.Min(Math.Max(0, color.B - iterationCount * 2), 255)
+                );
+            bitmap.SetPixel(j, i, color);
             return maxid;
         }
 
@@ -85,9 +89,9 @@ namespace NNPTPZ1
             return rootId;
         }
 
-        private static float IterateNewton(Polynomial polynomial, Polynomial derivedPolynomial, ref ComplexNumber worldCoordinateForPixel)
+        private static int IterateNewton(Polynomial polynomial, Polynomial derivedPolynomial, ref ComplexNumber worldCoordinateForPixel)
         {
-            float iterationCount = 0;
+            int iterationCount = 0;
             for (int i = 0; i < MAX_ITERATIONS; i++)
             {
                 var differential = polynomial.Evaluate(worldCoordinateForPixel).Divide(derivedPolynomial.Evaluate(worldCoordinateForPixel));
@@ -119,7 +123,7 @@ namespace NNPTPZ1
             return complexNumber;
         }
 
-        private static Polynomial createPolynomial()
+        private static Polynomial CreatePolynomial()
         {
             Polynomial polynomial = new Polynomial();
             polynomial.Coefficients.Add(new ComplexNumber() { Real = 1 });
@@ -141,9 +145,9 @@ namespace NNPTPZ1
             return coordinates;
         }
 
-        private static int[] ReadImagineDimensions(string[] args)
+        private static Bitmap ReadImagineDimensions(string[] args)
         {
-            int[] dimensions = { int.Parse(args[0]), int.Parse(args[1]) };
+            Bitmap dimensions = new Bitmap(int.Parse(args[0]), int.Parse(args[1]));
 
             return dimensions;
         }
