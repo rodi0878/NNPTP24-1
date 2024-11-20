@@ -11,170 +11,181 @@ namespace NNPTPZ1
     /// </summary>
     class Program
     {
-        static readonly Color[] colors = new Color[]
+        static readonly Color[] Colors = new Color[]
         {
             Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
         };
 
         static void Main(string[] args)
         {
-            int[] intargs;
+            if (args.Length < 7)
+            {
+                return;
+            }
+            int[] resolution;
             string output;
-            Bitmap bmp;
+            Bitmap bitmapImage;
             double xmin, ymin, xstep, ystep;
 
-            LoadConfiguration(args, out intargs, out output, out bmp, out xmin, out ymin, out xstep, out ystep);
+            LoadConfiguration(args, out resolution, out output, out bitmapImage, out xmin, out ymin, out xstep, out ystep);
 
-            Polynome p, pd;
-            InitializePolynome(out p, out pd);
-
-            // Console.WriteLine(p);
-            // Console.WriteLine(pd);
-
-            NewtonFractalAlgorithm(intargs, bmp, xmin, ymin, xstep, ystep, p, pd);
-
-            SaveImage(output, bmp);
+            Polynome polynome, derivedPolynome;
+            InitializePolynome(out polynome, out derivedPolynome);
+            NewtonFractalAlgorithm(resolution, bitmapImage, xmin, ymin, xstep, ystep, polynome, derivedPolynome);
+            SaveImage(output, bitmapImage);
         }
 
-        private static void SaveImage(string output, Bitmap bmp)
+        private static void SaveImage(string output, Bitmap bitmapImage)
         {
-            bmp.Save(output ?? "../../../out.png");
+            bitmapImage.Save(output ?? "../../../out.png");
         }
 
-        private static void NewtonFractalAlgorithm(int[] intargs, Bitmap bmp, double xmin, double ymin, double xstep, double ystep, Polynome p, Polynome pd)
+        private static void NewtonFractalAlgorithm(int[] resolution, Bitmap bitmapImage, double xmin, double ymin, double xstep, double ystep, Polynome polynome, Polynome derivedPolynome)
         {
-            List<ComplexNumber> koreny = new List<ComplexNumber>();
+            List<ComplexNumber> roots = new List<ComplexNumber>();
             int maxid = 0;
-
-            for (int i = 0; i < intargs[0]; i++)
+            for (int i = 0; i < resolution[0]; i++)
             {
-                for (int j = 0; j < intargs[1]; j++)
+                for (int j = 0; j < resolution[1]; j++)
                 {
-                    ProcessPixelOfImage(bmp, xmin, ymin, xstep, ystep, p, pd, koreny, ref maxid, i, j);
+                    ProcessPixel(bitmapImage, xmin, ymin, xstep, ystep, polynome, derivedPolynome, roots, ref maxid, i, j);
                 }
             }
         }
 
-        private static void ProcessPixelOfImage(Bitmap bmp, double xmin, double ymin, double xstep, double ystep, Polynome p, Polynome pd, List<ComplexNumber> roots, ref int maxid, int i, int j)
+        private static void ProcessPixel(Bitmap bitmapImage, double xmin, double ymin, double xstep, double ystep, Polynome polynome, Polynome derivedPolynome, List<ComplexNumber> roots, ref int maxid, int i, int j)
         {
-            ComplexNumber ox = CreateCoordinate(xmin, ymin, xstep, ystep, i, j);
+            ComplexNumber coordinate = CreateCoordinate(xmin, ymin, xstep, ystep, i, j);
 
-            int iteration = FindSolutionOfNewtonIteration(p, pd, ref ox);
+            int iterations = PerformNewtonIterations(polynome, derivedPolynome, ref coordinate);
 
-            int id = FindSolutionRootNumber(roots, ref maxid, ox);
+            int rootIndex = FindSolutionRootNumber(roots, ref maxid, coordinate);
 
-            Color color = CreatePixelColor(iteration, id);
+            Color pixelColor = CreatePixelColor(Colors[rootIndex % Colors.Length], iterations);
 
-            ColorifyPixel(bmp, i, j, color);
+            ColorifyPixel(bitmapImage, i, j, pixelColor);
         }
 
-        private static void ColorifyPixel(Bitmap bmpImage, int i, int j, Color color)
+        private static void ColorifyPixel(Bitmap bitmapImage, int i, int j, Color pixelColor)
         {
-            bmpImage.SetPixel(j, i, color);
+            bitmapImage.SetPixel(j, i, pixelColor);
         }
 
-        private static Color CreatePixelColor(int iteration, int id)
+        private static Color CreatePixelColor(Color baseColor, int iterations)
         {
-            Color color = colors[id % colors.Length];
-            return Color.FromArgb(Math.Min(Math.Max(0, color.R - (int)iteration * 2), 255),
-                Math.Min(Math.Max(0, color.G - (int)iteration * 2), 255),
-                Math.Min(Math.Max(0, color.B - (int)iteration * 2), 255));
+            const int colorDecay = 2;
+
+            return Color.FromArgb(
+                Math.Min(Math.Max(0, baseColor.R - iterations * colorDecay), 255),
+                Math.Min(Math.Max(0, baseColor.G - iterations * colorDecay), 255),
+                Math.Min(Math.Max(0, baseColor.B - iterations * colorDecay), 255)
+            );
         }
 
-        private static int FindSolutionRootNumber(List<ComplexNumber> roots, ref int maxId, ComplexNumber ox)
+        private static int FindSolutionRootNumber(List<ComplexNumber> roots, ref int maxid, ComplexNumber coordinate)
         {
-            bool known = false;
+            const double tolerance = 0.01;
+            bool knownRoot = false;
             int id = 0;
-            for (int w = 0; w < roots.Count; w++)
+
+            for (int i = 0; i < roots.Count; i++)
             {
-                if (Math.Pow(ox.RealPart - roots[w].RealPart, 2) + Math.Pow(ox.ImaginaryPart - roots[w].ImaginaryPart, 2) <= 0.01)
+                if (Math.Pow(coordinate.RealPart - roots[i].RealPart, 2) + Math.Pow(coordinate.ImaginaryPart - roots[i].ImaginaryPart, 2) <= tolerance)
                 {
-                    known = true;
-                    id = w;
+                    knownRoot = true;
+                    id = i;
                 }
             }
-            if (!known)
+
+            if (!knownRoot)
             {
-                roots.Add(ox);
+                roots.Add(coordinate);
                 id = roots.Count;
-                maxId = id + 1;
+                maxid = id + 1;
             }
 
             return id;
         }
 
-        private static int FindSolutionOfNewtonIteration(Polynome p, Polynome pd, ref ComplexNumber ox)
+        private static int PerformNewtonIterations(Polynome polynome, Polynome derivedPolynome, ref ComplexNumber coordinate)
         {
+            const int maxIterations = 30;
+            const double tolerance = 0.5;
             int iteration = 0;
-            for (int q = 0; q < 30; q++)
-            {
-                var diff = p.Eval(ox).Divide(pd.Eval(ox));
-                ox = ox.Subtract(diff);
 
-                if (Math.Pow(diff.RealPart, 2) + Math.Pow(diff.ImaginaryPart, 2) >= 0.5)
+            for (int i = 0; i < maxIterations; i++)
+            {
+                ComplexNumber difference = polynome.Evaluate(coordinate).Divide(derivedPolynome.Evaluate(coordinate));
+                coordinate = coordinate.Subtract(difference);
+
+                if (Math.Pow(difference.RealPart, 2) + Math.Pow(difference.ImaginaryPart, 2) >= tolerance)
                 {
-                    q--;
+                    i--;
                 }
                 iteration++;
             }
-
             return iteration;
         }
 
         private static ComplexNumber CreateCoordinate(double xmin, double ymin, double xstep, double ystep, int i, int j)
         {
-            // find "world" coordinates of pixel
-            double y = ymin + i * ystep;
+            const double minValue = 0.0001;
             double x = xmin + j * xstep;
+            double y = ymin + i * ystep;
 
-            ComplexNumber ox = new ComplexNumber()
+            ComplexNumber coordinate = new ComplexNumber()
             {
                 RealPart = x,
-                ImaginaryPart = (float)(y)
+                ImaginaryPart = y
             };
 
-            if (ox.RealPart == 0)
-                ox.RealPart = 0.0001;
-            if (ox.ImaginaryPart == 0)
-                ox.ImaginaryPart = 0.0001f;
-            return ox;
-        }
-
-        private static void InitializePolynome(out Polynome p, out Polynome pd)
-        {
-            // TODO: poly should be parameterised?
-            p = new Polynome();
-            p.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
-            p.Coefficients.Add(ComplexNumber.Zero);
-            p.Coefficients.Add(ComplexNumber.Zero);
-            //p.Coe.Add(Cplx.Zero);
-            p.Coefficients.Add(new ComplexNumber() { RealPart = 1 });
-            Polynome ptmp = p;
-            pd = p.Derive();
-        }
-
-        private static void LoadConfiguration(string[] args, out int[] intargs, out string output, out Bitmap bmp, out double xmin, out double ymin, out double xstep, out double ystep)
-        {
-            intargs = new int[2];
-            for (int i = 0; i < intargs.Length; i++)
+            if (coordinate.RealPart == 0)
             {
-                intargs[i] = int.Parse(args[i]);
+                coordinate.RealPart = minValue;
             }
-            double[] doubleargs = new double[4];
-            for (int i = 0; i < doubleargs.Length; i++)
+
+            if (coordinate.ImaginaryPart == 0)
             {
-                doubleargs[i] = double.Parse(args[i + 2]);
+                coordinate.ImaginaryPart = minValue;
+            }
+            return coordinate;
+        }
+
+        private static void InitializePolynome(out Polynome polynome, out Polynome derivedPolynome)
+        {
+            polynome = new Polynome(
+                new List<ComplexNumber>
+                {
+                    new ComplexNumber() { RealPart = 1 },
+                    ComplexNumber.Zero,
+                    ComplexNumber.Zero,
+                    new ComplexNumber() { RealPart = 1 }
+                });
+
+            derivedPolynome = polynome.Derive();
+        }
+
+        private static void LoadConfiguration(string[] args, out int[] resolution, out string output, out Bitmap bitmapImage, out double xmin, out double ymin, out double xstep, out double ystep)
+        {
+            resolution = new int[2];
+            for (int i = 0; i < resolution.Length; i++)
+            {
+                resolution[i] = int.Parse(args[i]);
+            }
+            double[] coordinates = new double[4];
+            for (int i = 0; i < coordinates.Length; i++)
+            {
+                coordinates[i] = double.Parse(args[i + 2]);
             }
             output = args[6];
-            // TODO: add parameters from args?
-            bmp = new Bitmap(intargs[0], intargs[1]);
-            xmin = doubleargs[0];
-            double xmax = doubleargs[1];
-            ymin = doubleargs[2];
-            double ymax = doubleargs[3];
+            bitmapImage = new Bitmap(resolution[0], resolution[1]);
+            xmin = coordinates[0];
+            double xmax = coordinates[1];
+            ymin = coordinates[2];
+            double ymax = coordinates[3];
 
-            xstep = (xmax - xmin) / intargs[0];
-            ystep = (ymax - ymin) / intargs[1];
+            xstep = (xmax - xmin) / bitmapImage.Width;
+            ystep = (ymax - ymin) / bitmapImage.Height;
         }
     }
 }

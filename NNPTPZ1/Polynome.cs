@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 
-
 namespace NNPTPZ1.Mathematics
 {
     public class Polynome
@@ -10,6 +9,11 @@ namespace NNPTPZ1.Mathematics
         public Polynome()
         {
             Coefficients = new List<ComplexNumber>();
+        }
+
+        public Polynome(List<ComplexNumber> coefficients)
+        {
+            Coefficients = coefficients ?? new List<ComplexNumber>();
         }
 
         public void Add(ComplexNumber coefficient)
@@ -26,11 +30,9 @@ namespace NNPTPZ1.Mathematics
             Polynome derivedPolynome = new Polynome();
             for (int i = 1; i < Coefficients.Count; i++)
             {
-                var derivedCoefficient = Coefficients[i].Multiply(new ComplexNumber() { RealPart = i });
-
+                ComplexNumber derivedCoefficient = Coefficients[i].Multiply(new ComplexNumber { RealPart = i });
                 derivedPolynome.Coefficients.Add(derivedCoefficient);
             }
-
             return derivedPolynome;
         }
 
@@ -39,9 +41,19 @@ namespace NNPTPZ1.Mathematics
         /// </summary>
         /// <param name="x">point of evaluation (x)</param>
         /// <returns>y</returns>
-        public ComplexNumber Eval(double x)
+        public ComplexNumber Evaluate(double x)
         {
-            return Eval(new ComplexNumber() { RealPart = x, ImaginaryPart = 0 });
+            return Evaluate(new ComplexNumber { RealPart = x });
+        }
+
+        private ComplexNumber Power(ComplexNumber baseNumber, int exponent)
+        {
+            ComplexNumber result = baseNumber;
+            for (int i = 1; i < exponent; i++)
+            {
+                result = result.Multiply(baseNumber);
+            }
+            return result;
         }
 
         /// <summary>
@@ -49,27 +61,24 @@ namespace NNPTPZ1.Mathematics
         /// </summary>
         /// <param name="x">point of evaluation</param>
         /// <returns>y</returns>
-        public ComplexNumber Eval(ComplexNumber x)
+        public ComplexNumber Evaluate(ComplexNumber x)
         {
-            ComplexNumber s = ComplexNumber.Zero;
+            ComplexNumber result = ComplexNumber.Zero;
+
             for (int i = 0; i < Coefficients.Count; i++)
             {
-                ComplexNumber coef = Coefficients[i];
-                ComplexNumber bx = x;
-                int power = i;
+                ComplexNumber coefficient = Coefficients[i];
+                ComplexNumber term = coefficient;
 
                 if (i > 0)
                 {
-                    for (int j = 0; j < power - 1; j++)
-                        bx = bx.Multiply(x);
-
-                    coef = coef.Multiply(bx);
+                    term = coefficient.Multiply(Power(x, i));
                 }
 
-                s = s.Add(coef);
+                result = result.Add(term);
             }
 
-            return s;
+            return result;
         }
 
         /// <summary>
@@ -78,27 +87,24 @@ namespace NNPTPZ1.Mathematics
         /// <returns>String repr of polynomial</returns>
         public override string ToString()
         {
-            string s = "";
+            string polynomeString = string.Empty;
 
             for (int i = 0; i < Coefficients.Count; i++)
             {
-                s += Coefficients[i];
+                if (i > 0)
+                {
+                    polynomeString += " + ";
+                }
+
+                polynomeString += Coefficients[i];
 
                 if (i > 0)
                 {
-                    for (int j = 0; j < i; j++)
-                    {
-                        s += "x";
-                    }
-                }
-
-                if (i + 1 < Coefficients.Count)
-                {
-                    s += " + ";
+                    polynomeString += new string('x', i);
                 }
             }
 
-            return s;
+            return polynomeString;
         }
     }
 }

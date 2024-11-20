@@ -1,79 +1,70 @@
 ﻿using System;
-
 namespace NNPTPZ1.Mathematics
 {
     public class ComplexNumber
     {
         public double RealPart { get; set; }
         public double ImaginaryPart { get; set; }
-
         public readonly static ComplexNumber Zero = new ComplexNumber()
         {
             RealPart = 0,
             ImaginaryPart = 0
         };
+        private const double Tolerance = 1e-5;
+
+        public ComplexNumber Add(ComplexNumber other)
+        {
+            return new ComplexNumber
+            {
+                RealPart = this.RealPart + other.RealPart,
+                ImaginaryPart = this.ImaginaryPart + other.ImaginaryPart
+            };
+        }
 
         public override bool Equals(object obj)
         {
-            if (obj is ComplexNumber)
+            if (obj is ComplexNumber other)
             {
-                ComplexNumber x = obj as ComplexNumber;
-                // Math.Abs(x.RealPart - RealPart) < 0.00001
-                return x.RealPart == RealPart && x.ImaginaryPart == ImaginaryPart;
+                return Math.Abs(other.RealPart - RealPart) < Tolerance &&
+                       Math.Abs(other.ImaginaryPart - ImaginaryPart) < Tolerance;
             }
-            return base.Equals(obj);
+            return false;
         }
-
-        public ComplexNumber Add(ComplexNumber b)
+        public ComplexNumber Subtract(ComplexNumber other)
         {
-            ComplexNumber a = this;
-            return new ComplexNumber()
+            return new ComplexNumber
             {
-                RealPart = a.RealPart + b.RealPart,
-                ImaginaryPart = a.ImaginaryPart + b.ImaginaryPart
-            };
-        }
-        public ComplexNumber Subtract(ComplexNumber b)
-        {
-            ComplexNumber a = this;
-            return new ComplexNumber()
-            {
-                RealPart = a.RealPart - b.RealPart,
-                ImaginaryPart = a.ImaginaryPart - b.ImaginaryPart
+                RealPart = this.RealPart - other.RealPart,
+                ImaginaryPart = this.ImaginaryPart - other.ImaginaryPart
             };
         }
 
-        public ComplexNumber Multiply(ComplexNumber b)
+        public ComplexNumber Multiply(ComplexNumber other)
         {
-            ComplexNumber a = this;
-            // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
-            return new ComplexNumber()
+            return new ComplexNumber
             {
-                RealPart = a.RealPart * b.RealPart - a.ImaginaryPart * b.ImaginaryPart,
-                ImaginaryPart = a.RealPart * b.ImaginaryPart + a.ImaginaryPart * b.RealPart
+                RealPart = this.RealPart * other.RealPart - this.ImaginaryPart * other.ImaginaryPart,
+                ImaginaryPart = this.RealPart * other.ImaginaryPart + this.ImaginaryPart * other.RealPart
             };
         }
-        public ComplexNumber Divide(ComplexNumber b)
+        public ComplexNumber Divide(ComplexNumber other)
         {
-            // (aRe + aIm*i) / (bRe + bIm*i)
-            // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
-            //  bRe*bRe - bIm*bIm*i*i
-            ComplexNumber tmp = this.Multiply(new ComplexNumber() { RealPart = b.RealPart, ImaginaryPart = -b.ImaginaryPart });
-            double tmp2 = b.RealPart * b.RealPart + b.ImaginaryPart * b.ImaginaryPart;
+            ComplexNumber nominator = this.Multiply(new ComplexNumber{ RealPart = other.RealPart, ImaginaryPart = -other.ImaginaryPart });
+            double denominator = other.RealPart * other.RealPart + other.ImaginaryPart * other.ImaginaryPart;
 
-            return new ComplexNumber()
+            return new ComplexNumber
             {
-                RealPart = tmp.RealPart / tmp2,
-                ImaginaryPart = tmp.ImaginaryPart / tmp2
+                RealPart = nominator.RealPart / denominator,
+                ImaginaryPart = nominator.ImaginaryPart / denominator
             };
         }
 
-        public double GetAbs()
+        public double GetAbsoluteValue()
         {
             return Math.Sqrt(RealPart * RealPart + ImaginaryPart * ImaginaryPart);
         }
 
-        public double GetAngle()
+        public double GetAngleInRadians()
         {
             return Math.Atan(ImaginaryPart / RealPart);
         }

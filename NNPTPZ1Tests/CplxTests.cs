@@ -1,11 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NNPTPZ1.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NNPTPZ1;
 
 namespace NNPTPZ1.Mathematics.Tests
 {
@@ -69,13 +62,13 @@ namespace NNPTPZ1.Mathematics.Tests
             poly.Coefficients.Add(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
             poly.Coefficients.Add(new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 });
             poly.Coefficients.Add(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
-            ComplexNumber result = poly.Eval(new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 });
+            ComplexNumber result = poly.Evaluate(new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 });
             var expected = new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
-            result = poly.Eval(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
+            result = poly.Evaluate(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
             expected = new ComplexNumber() { RealPart = 2, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
-            result = poly.Eval(new ComplexNumber() { RealPart = 2, ImaginaryPart = 0 });
+            result = poly.Evaluate(new ComplexNumber() { RealPart = 2, ImaginaryPart = 0 });
             expected = new ComplexNumber() { RealPart = 5.0000000000, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
 
