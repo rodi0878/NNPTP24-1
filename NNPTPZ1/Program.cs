@@ -91,24 +91,24 @@ namespace NNPTPZ1
         }
         static void GenerateFractalImage(int width, int height, double xmin, double ymin, double xstep, double ystep, Polynomial p, Polynomial pd, Bitmap bmp)
         {
-            List<ComplexNumber> koreny = new List<ComplexNumber>();
+            List<ComplexNumber> roots = new List<ComplexNumber>();
 
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    ComplexNumber currentComplex = CalculateInitialComplexNumber(xmin, ymin, xstep, ystep, i, j);
-                    int iterations = PerformNewtonIteration(p, pd, ref currentComplex);
-                    int rootIndex = GetRootIndex(koreny, currentComplex);
-                    if (rootIndex == -1)
-                    {
-                        koreny.Add(currentComplex);
-                        rootIndex = koreny.Count;
-                    }
-                    Color pixelColor = CalculateColor(rootIndex, currentComplex, iterations);
-                    bmp.SetPixel(j, i, pixelColor);
+                    processPixel(i, j, xmin, ymin, xstep, ystep, p, pd, bmp, roots);
                 }
             }
+        }
+
+        static void processPixel(int i, int j, double xmin, double ymin, double xstep, double ystep, Polynomial p, Polynomial pd, Bitmap bmp, List<ComplexNumber> roots)
+        {
+            ComplexNumber currentComplex = CalculateInitialComplexNumber(xmin, ymin, xstep, ystep, i, j);
+            int iterations = PerformNewtonIteration(p, pd, ref currentComplex);
+            int rootIndex = GetOrAddRootIndex(roots, currentComplex);
+            Color pixelColor = CalculateColor(rootIndex, currentComplex, iterations);
+            SetPixelColor(bmp, i, j, pixelColor);
         }
 
         static ComplexNumber CalculateInitialComplexNumber(double xmin, double ymin, double xstep, double ystep, int i, int j)
@@ -119,13 +119,13 @@ namespace NNPTPZ1
             ComplexNumber ox = new ComplexNumber()
             {
                 Real = x,
-                Imaginari = (float)(y)
+                Imaginary = (float)(y)
             };
 
             if (ox.Real == 0)
                 ox.Real = 0.0001;
-            if (ox.Imaginari == 0)
-                ox.Imaginari = 0.0001f;
+            if (ox.Imaginary == 0)
+                ox.Imaginary = 0.0001f;
 
             return ox;
         }
@@ -133,38 +133,46 @@ namespace NNPTPZ1
         static int PerformNewtonIteration(Polynomial p, Polynomial pd, ref ComplexNumber ox)
         {
             int iterations = 0;
-            for (int q = 0; q < 30; q++)
+            for (int i = 0; i < 30; i++)
             {
                 var diff = p.Eval(ox).Divide(pd.Eval(ox));
                 ox = ox.Subtract(diff);
 
-                if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginari, 2) >= 0.5)
+                if (Math.Pow(diff.Real, 2) + Math.Pow(diff.Imaginary, 2) >= 0.5)
                 {
-                    q--;
+                    i--;
                 }
                 iterations++;
             }
             return iterations;
         }
 
-        static int GetRootIndex(List<ComplexNumber> koreny, ComplexNumber ox)
+        static int GetOrAddRootIndex(List<ComplexNumber> roots, ComplexNumber currentComplex)
         {
-            for (int w = 0; w < koreny.Count; w++)
+            for (int w = 0; w < roots.Count; w++)
             {
-                if (Math.Pow(ox.Real - koreny[w].Real, 2) + Math.Pow(ox.Imaginari - koreny[w].Imaginari, 2) <= 0.01)
+                if (Math.Pow(currentComplex.Real - roots[w].Real, 2) + Math.Pow(currentComplex.Imaginary - roots[w].Imaginary, 2) <= 0.01)
                 {
                     return w;
                 }
             }
-            return -1;
+            roots.Add(currentComplex);
+            return roots.Count - 1;
         }
 
         static Color CalculateColor(int rootIndex, ComplexNumber ox, int iterations)
         {
-            Color vv = colors[rootIndex % colors.Length];
-            vv = Color.FromArgb(vv.R, vv.G, vv.B);
-            vv = Color.FromArgb(Math.Min(Math.Max(0, vv.R - iterations * 2), 255), Math.Min(Math.Max(0, vv.G - iterations * 2), 255), Math.Min(Math.Max(0, vv.B - iterations * 2), 255));
-            return vv;
+            Color baseColor = colors[rootIndex % colors.Length];
+            return Color.FromArgb(
+                Math.Min(Math.Max(0, baseColor.R - iterations * 2), 255),
+                Math.Min(Math.Max(0, baseColor.G - iterations * 2), 255),
+                Math.Min(Math.Max(0, baseColor.B - iterations * 2), 255)
+                );
+        }
+
+        static void SetPixelColor(Bitmap bmp, int i, int j, Color color)
+        {
+            bmp.SetPixel(j, i, color);
         }
 
     }

@@ -44,7 +44,7 @@ namespace NNPTPZ1.Mathematics
         /// <returns>y</returns>
         public ComplexNumber Eval(double pointOfEvaluation)
         {
-            return Eval(new ComplexNumber() { Real = pointOfEvaluation, Imaginari = 0 });
+            return Eval(new ComplexNumber() { Real = pointOfEvaluation, Imaginary = 0 });
         }
 
         /// <summary>

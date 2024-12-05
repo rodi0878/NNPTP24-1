@@ -9,37 +9,37 @@ namespace NNPTPZ1.Mathematics
     internal class ComplexNumber
     {
 
+        public readonly static ComplexNumber Zero = new ComplexNumber()
+        {
+            Real = 0,
+            Imaginary = 0
+        };
+
         public double Real { get; set; }
-        public float Imaginari { get; set; }
+        public double Imaginary { get; set; }
 
         public override bool Equals(object obj)
         {
             if (obj is ComplexNumber)
             {
                 ComplexNumber x = obj as ComplexNumber;
-                return x.Real == Real && x.Imaginari == Imaginari;
+                return x.Real == Real && x.Imaginary == Imaginary;
             }
             return base.Equals(obj);
         }
-
-        public readonly static ComplexNumber Zero = new ComplexNumber()
-        {
-            Real = 0,
-            Imaginari = 0
-        };
 
         public ComplexNumber Multiply(ComplexNumber b)
         {
             ComplexNumber a = this;
             return new ComplexNumber()
             {
-                Real = a.Real * b.Real - a.Imaginari * b.Imaginari,
-                Imaginari = (float)(a.Real * b.Imaginari + a.Imaginari * b.Real)
+                Real = a.Real * b.Real - a.Imaginary * b.Imaginary,
+                Imaginary = (float)(a.Real * b.Imaginary + a.Imaginary * b.Real)
             };
         }
         public double GetAbsoluteValue()
         {
-            return Math.Sqrt(Real * Real + Imaginari * Imaginari);
+            return Math.Sqrt(Real * Real + Imaginary * Imaginary);
         }
 
         public ComplexNumber Add(ComplexNumber b)
@@ -48,37 +48,36 @@ namespace NNPTPZ1.Mathematics
             return new ComplexNumber()
             {
                 Real = a.Real + b.Real,
-                Imaginari = a.Imaginari + b.Imaginari
+                Imaginary = a.Imaginary + b.Imaginary
             };
         }
-        public double GetAngleInDegrees()
+        public double GetAngleInRadians()
         {
-            return Math.Atan(Imaginari / Real);
+            return Math.Atan(Imaginary / Real);
         }
-        public ComplexNumber Subtract(ComplexNumber b)
+        public ComplexNumber Subtract(ComplexNumber other)
         {
-            ComplexNumber a = this;
             return new ComplexNumber()
             {
-                Real = a.Real - b.Real,
-                Imaginari = a.Imaginari - b.Imaginari
+                Real = this.Real - other.Real,
+                Imaginary = this.Imaginary - other.Imaginary
             };
         }
 
         public override string ToString()
         {
-            return $"({Real} + {Imaginari}i)";
+            return $"({Real} + {Imaginary}i)";
         }
 
         internal ComplexNumber Divide(ComplexNumber b)
         {
-            var complexConjugate = this.Multiply(new ComplexNumber() { Real = b.Real, Imaginari = -b.Imaginari });
-            var modulusSquared = b.Real * b.Real + b.Imaginari * b.Imaginari;
+            var complexConjugate = this.Multiply(new ComplexNumber() { Real = b.Real, Imaginary = -b.Imaginary });
+            var modulusSquared = b.Real * b.Real + b.Imaginary * b.Imaginary;
 
             return new ComplexNumber()
             {
                 Real = complexConjugate.Real / modulusSquared,
-                Imaginari = (float)(complexConjugate.Imaginari / modulusSquared)
+                Imaginary = (float)(complexConjugate.Imaginary / modulusSquared)
             };
         }
     }
